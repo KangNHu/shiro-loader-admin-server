@@ -45,7 +45,7 @@ export default {
     return {
       param: {
         username: "admin",
-        password: "123123",
+        password: "ning123456",
       },
       rules: {
         username: [
@@ -72,6 +72,7 @@ export default {
                   this.$router.push("/");
               })
             }else{
+                ut.removeUserState();
                 this.$message.error("获取token失败")
             }
           });

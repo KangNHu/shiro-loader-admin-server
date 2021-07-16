@@ -3,7 +3,13 @@
 </template>
 
 <script>
-export default {};
+import dayjs from "dayjs"
+
+export default {
+    provide:{
+        dayutil:dayjs
+    }
+};
 </script>
 
 <style>

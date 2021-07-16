@@ -1,0 +1,128 @@
+<template>
+  <div>
+    <div class="crumbs">
+      <el-breadcrumb separator="/">
+        <el-breadcrumb-item>
+          <i class="el-icon-lx-calendar"></i> 系统设置
+        </el-breadcrumb-item>
+        <el-breadcrumb-item>全局配置</el-breadcrumb-item>
+      </el-breadcrumb>
+    </div>
+    <div class="container">
+      <div class="form-box">
+        <el-form ref="form" :model="form" label-width="230px" :rules="rules">
+          <el-form-item label="系统版本">
+            {{ form.version }}
+          </el-form-item>
+          <el-form-item label="权限配置变更事件的有效时间" prop="eventTime">
+            <el-input-number
+              controls-position="right"
+              @change="handleChange('eventTime', $value)"
+              v-model="form.eventTime"
+            ></el-input-number>
+            <span>（单位小时）</span>
+          </el-form-item>
+          <el-form-item label="token签名密钥(影响本系统登录)" prop="keyPair">
+            <el-input
+              type="textarea"
+              autosize
+              placeholder="请输入token签名密钥"
+              v-model="form.keyPair"
+            >
+            </el-input>
+          </el-form-item>
+          <el-form-item label="客户端token" prop="clientToken">
+            <el-input
+              placeholder="请输入客户端token"
+              v-model="form.clientToken"
+            >
+            </el-input>
+          </el-form-item>
+          <el-form-item label="登录有效时间" prop="loginValidTime">
+            <el-input-number
+              controls-position="right"
+              @change="handleChange('loginValidTime', $event)"
+              v-model="form.loginValidTime"
+            ></el-input-number>
+            <span>（小时）</span>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="onSubmit">表单提交</el-button>
+          </el-form-item>
+        </el-form>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import sa from "../../api/SystemApi";
+
+export default {
+  data() {
+    return {
+      form: {
+        version: "1.0.0",
+        eventTime: 0,
+        keyPair: "{xxxxxxxxx}",
+        clientToken: "123456",
+        loginValidTime: 2,
+      },
+      rules: {
+        eventTime: [
+          { required: true, message: "权限配置变更事件的有效时间不能为空", trigger: "blur" },
+        ],
+         keyPair: [
+          { required: true, message: "token签名密钥不能为空", trigger: "blur" },
+        ],
+        clientToken: [
+          { required: true, message: "客户端token不能为空", trigger: "blur" },
+        ],
+         loginValidTime: [
+          { required: true, message: "登录有效时间不能为空", trigger: "blur" },
+        ],
+      },
+    };
+  },
+  created() {
+    this.getData();
+  },
+  methods: {
+    //详情 获取系统配置信息  
+    getData() {
+      sa.getSystemInfo().then((systemInfo) => {
+        this.form = systemInfo;
+        this.form.eventTime = this.form.eventTime / 3600000; // 后台为毫秒 -> 小时
+        this.form.loginValidTime = this.form.loginValidTime / 60; // 后台为分钟 -> 小时
+      });
+    },
+    //提交
+    onSubmit() {
+      this.$refs.form.validate((vali) => {
+        if (vali) {
+            let systemUpdate = {};
+            for(let key in this.form){
+                systemUpdate[key] = this.form[key];     
+            }
+            if(systemUpdate.eventTime){
+                systemUpdate.eventTime = this.form.eventTime * 3600000;
+            }
+            if(systemUpdate.loginValidTime){
+                systemUpdate.loginValidTime = this.form.loginValidTime * 60;
+            }
+            sa.update(systemUpdate).then(() =>{
+                this.$message.success("编辑成功");
+                this.getData();
+            }) 
+        }
+      });
+    },
+    //处理计数器事件
+    // name 字段名称
+    // value 变更后的值
+    handleChange(name , value){
+        console.log(name , value);
+    }
+  },
+};
+</script>

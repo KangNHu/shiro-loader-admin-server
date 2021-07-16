@@ -9,12 +9,19 @@ const service = axios.create({
     baseURL: 'http://localhost:8869/shiroplus/',
     timeout: 5000
 });
-
-
+//用户动态获取请求头
+service.headersCall = () => {
+    return {};
+}
 service.interceptors.request.use(
     config => {
         //添加token
         config.headers[ut.token_head_name] = ut.getToken();
+        //添加定制化的请求头
+        let headers = service.headersCall();
+        for(let key in headers){
+            config.headers[key] = headers[key];
+        }
         return config;
     },
     error => {
@@ -46,7 +53,7 @@ service.interceptors.response.use(
         let resp = error.response;
         if(!resp){
             message.error(error.message);
-            return;
+            return Promise.reject(); 
         }
         let reuslt = resp.data;
         //重定向

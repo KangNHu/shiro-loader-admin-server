@@ -20,9 +20,7 @@
                     </span>
                     <template #dropdown>
                         <el-dropdown-menu>
-                            <a href="https://github.com/lin-xin/vue-manage-system" target="_blank">
-                                <el-dropdown-item>项目仓库</el-dropdown-item>
-                            </a>
+                            <el-dropdown-item divided command="updatePassword">修改密码</el-dropdown-item>
                             <el-dropdown-item divided command="loginout">退出登录</el-dropdown-item>
                         </el-dropdown-menu>
                     </template>
@@ -30,14 +28,19 @@
             </div>
         </div>
     </div>
+
+    <update-password :open ="isOpen" @cancel="isOpen = false">
+
+    </update-password>
 </template>
 <script>
 import ut from "../utils/userUtils"
-
+import updatePassword from "../views/user/UpdatePassword.vue"
 export default {
     data() {
         return {
-            fullscreen: false
+            fullscreen: false,
+            isOpen:false
         };
     },
     computed: {
@@ -53,9 +56,14 @@ export default {
     methods: {
         // 用户名下拉菜单选择事件
         handleCommand(command) {
+            //退出登录
             if (command == "loginout") {
-                localStorage.removeItem("ms_username");
+                ut.removeUserState();
                 this.$router.push("/login");
+            }
+            //修改密码
+            else if(command == 'updatePassword'){
+                 this.isOpen = true;   
             }
         },
         // 侧边栏折叠
@@ -67,6 +75,9 @@ export default {
         if (document.body.clientWidth < 1500) {
             this.collapseChage();
         }
+    },
+    components:{
+        updatePassword
     }
 };
 </script>

@@ -27,11 +27,16 @@ function getCurrentUser(){
     }
     return JSON.parse(userJson);
 }
-
+//获取当前用户id
+function getCurrentUserId(){
+    let userInfo = getCurrentUser();
+    return userInfo ? userInfo.id : userInfo;
+}
 const ut = {
     getToken,
     saveToken,
     setUserInfo,
+    getCurrentUserId,
     getCurrentUser,
     removeUserState,
     token_head_name,

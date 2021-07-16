@@ -13,13 +13,6 @@
           type="primary"
           icon="el-icon-delete"
           class="handle-del mr10"
-          @click="delAllSelection"
-          >批量删除</el-button
-        >
-        <el-button
-          type="primary"
-          icon="el-icon-delete"
-          class="handle-del mr10"
           @click="handlingAdd"
           >新增</el-button
         >
@@ -43,13 +36,8 @@
         class="table"
         ref="multipleTable"
         header-cell-class-name="table-header"
-        @selection-change="handleSelectionChange"
+        @row-click="look"
       >
-        <el-table-column
-          type="selection"
-          width="55"
-          align="center"
-        ></el-table-column>
         <el-table-column
           prop="id"
           label="ID"
@@ -57,26 +45,27 @@
           align="center"
         ></el-table-column>
         <el-table-column prop="username" label="用户名"></el-table-column>
-        <el-table-column prop="nickName" label="用户昵称"></el-table-column>
+        <el-table-column prop="nickname" label="用户昵称"></el-table-column>
         <el-table-column
           prop="status"
           label="状态"
+          :formatter="formatterStatus"
           align="center"
         ></el-table-column>
-        <el-table-column prop="createTm" label="创建时间"></el-table-column>
+        <el-table-column prop="createTm" :formatter="formatterDate" label="创建时间"></el-table-column>
         <el-table-column label="操作" width="180" align="center">
           <template #default="scope">
             <el-button
               type="text"
               icon="el-icon-edit"
-              @click="handleEdit(scope.$index, scope.row)"
+              @click.stop="handleEdit(scope.$index, scope.row)"
               >编辑</el-button
             >
             <el-button
               type="text"
               icon="el-icon-delete"
               class="red"
-              @click="handleDelete(scope.$index, scope.row)"
+              @click.stop="handleDelete(scope.$index, scope.row)"
               >删除</el-button
             >
           </template>
@@ -96,26 +85,12 @@
 
    <add-or-update
       :open="addOrUpdate.modalOpen"
-      :actionSate="addOrUpdate.actionSate"
-      :titleDescribe="addOrUpdate.titleDescribe"
+      :action-sate="addOrUpdate.actionSate"
+      :title-describe="addOrUpdate.titleDescribe"
+      :user-id ="addOrUpdate.userId"
+      @operation-complete ="getData"
+      @cancel = "cancel"
     />
-    <!-- 编辑弹出框 -->
-    <el-dialog title="编辑" v-model="editVisible" width="30%">
-      <el-form ref="form" :model="form" label-width="70px">
-        <el-form-item label="用户名">
-          <el-input v-model="form.name"></el-input>
-        </el-form-item>
-        <el-form-item label="地址">
-          <el-input v-model="form.address"></el-input>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="editVisible = false">取 消</el-button>
-          <el-button type="primary" @click="saveEdit">确 定</el-button>
-        </span>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
@@ -137,6 +112,7 @@ export default {
         modalOpen: false,
         actionSate: 1,
         titleDescribe: "新增",
+        userId:''
       },
       tableData: [],
       multipleSelection: [],
@@ -149,7 +125,7 @@ export default {
     };
   },
   created() {
-    this.getData();
+    this.handleSearch();
   },
   methods: {
     getData() {
@@ -161,61 +137,70 @@ export default {
         }
       });
     },
-    //触发新增
+    //新增操作
     handlingAdd() {
       this.addOrUpdate.actionSate = 1;
-      this.titleDescribe = "新增";
+      this.addOrUpdate.titleDescribe = "新增";
       this.addOrUpdate.modalOpen = true;
+    },
+    // 编辑操作
+    handleEdit(index, row) {
+      this.addOrUpdate.actionSate = 3;
+      this.addOrUpdate.userId = row.id;
+      this.addOrUpdate.titleDescribe = "编辑";
+      this.addOrUpdate.modalOpen = true;
+    },
+     // 删除操作
+    handleDelete(index,row) {
+      // 二次确认删除
+      this.$confirm("确定要删除吗？", "提示", {
+        type: "warning",
+      })
+        .then(() => {
+          userApi.delete(row.id).then(() =>{
+             this.$message.success("删除成功");
+             //刷新列表
+             this.handleSearch();
+          })
+        })
+        .catch(() => {});
+    },
+    //查看
+    look(row){
+       this.addOrUpdate.actionSate = 2;
+       this.addOrUpdate.userId = row.id;
+       this.addOrUpdate.titleDescribe = "查看";
+       this.addOrUpdate.modalOpen = true;
+    },
+    //取消模态框
+    cancel(){
+        this.addOrUpdate.modalOpen = false;
+        this.addOrUpdate.userId ='';
     },
     // 触发搜索按钮
     handleSearch() {
       this.query.pageNo = 1;
       this.getData();
     },
-    // 删除操作
-    handleDelete(index) {
-      // 二次确认删除
-      this.$confirm("确定要删除吗？", "提示", {
-        type: "warning",
-      })
-        .then(() => {
-          this.$message.success("删除成功");
-          this.tableData.splice(index, 1);
-        })
-        .catch(() => {});
-    },
-    // 多选操作
-    handleSelectionChange(val) {
-      this.multipleSelection = val;
-    },
-    delAllSelection() {
-      const length = this.multipleSelection.length;
-      let str = "";
-      this.delList = this.delList.concat(this.multipleSelection);
-      for (let i = 0; i < length; i++) {
-        str += this.multipleSelection[i].name + " ";
-      }
-      this.$message.error(`删除了${str}`);
-      this.multipleSelection = [];
-    },
-    // 编辑操作
-    handleEdit(index, row) {
-      this.idx = index;
-      this.form = row;
-      this.editVisible = true;
-    },
-    // 保存编辑
-    saveEdit() {
-      this.editVisible = false;
-      this.$message.success(`修改第 ${this.idx + 1} 行成功`);
-      this.$set(this.tableData, this.idx, this.form);
-    },
     // 分页导航
     handlePageChange(val) {
       this.$set(this.query, "pageIndex", val);
       this.getData();
     },
+    /**
+     * 格式化相关
+     */
+     formatterDate(row, column, cellValue){
+      if(!cellValue){
+        return cellValue;
+      }
+     return this.dayutil(cellValue).format("yyyy-MM-dd HH:mm:ss");
+    },
+    formatterStatus(row, column, cellValue){
+        return cellValue ? (cellValue === 1 ? "正常":"禁用") : cellValue
+    }
   },
+  inject:['dayutil'],
   components: {
     addOrUpdate,
   },

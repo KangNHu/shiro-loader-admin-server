@@ -21,6 +21,15 @@ const routes = [
                 /* webpackChunkName: "dashboard" */
                 "../views/Dashboard.vue")
             }, {
+                path: "/globalSettings",
+                name: "globalSettings",
+                meta: {
+                    title: '系统全局配置'
+                },
+                component: () => import (
+                /* webpackChunkName: "table" */
+                "../views/system/GlobalSetting.vue")
+            },{
                 path: "/user",
                 name: "user",
                 meta: {
@@ -29,7 +38,7 @@ const routes = [
                 component: () => import (
                 /* webpackChunkName: "table" */
                 "../views/user/Page.vue")
-            }, {
+            },{
                 path: "/charts",
                 name: "basecharts",
                 meta: {
