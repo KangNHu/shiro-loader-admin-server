@@ -3,7 +3,7 @@
     <div class="crumbs">
       <el-breadcrumb separator="/">
         <el-breadcrumb-item>
-          <i class="el-icon-lx-cascades">全局元数据管理列表</i>
+          <i class="el-icon-lx-cascades">权限元数据管理</i>
         </el-breadcrumb-item>
       </el-breadcrumb>
     </div>
@@ -18,7 +18,7 @@
         >
         <el-input
           v-model="query.tenantId"
-          placeholder="租户ID"
+          placeholder="接口URl"
           class="handle-input mr10"
         ></el-input>
         <el-button type="primary" icon="el-icon-search" @click="handleSearch"
@@ -39,24 +39,27 @@
           width="55"
           align="center"
         ></el-table-column>
-        <el-table-column prop="tenantId" label="租户ID"></el-table-column>
-         <el-table-column label="接口白名单" show-overflow-tooltip = "true">
+        <el-table-column prop="tenantId" label="接口URl"></el-table-column>
+        <el-table-column label="请求方法">
+          <template #default="scope">
+                  <el-tag>{{scope.row.method}}</el-tag>
+          </template>
+        </el-table-column>
+         <el-table-column label="权限标识列表" show-overflow-tooltip = "true">
             <template #default="scope">
-                <div v-if="scope.row.anons">
-                  <el-tag v-for="anon in (scope.row.anons ? scope.row.anons.split(',') : [])" :key="anon" >{{anon}}</el-tag>
-                </div>
+                  <el-tag v-for="permi in (scope.row.permis ? scope.row.permis.split(',') : [])" :key="permi" >{{permi}}</el-tag>
             </template>
         </el-table-column>
         <el-table-column
-          prop="enableAuthentication"
-          label="是否开启鉴权"
-          :formatter="formatterStatus"
+          prop="logical"
+          label="逻辑类型"
+          :formatter="formatterLogical"
           align="center"
         ></el-table-column>
         <el-table-column
-          prop="enableAuthorization"
-          label="是否开启授权"
-          :formatter="formatterStatus"
+          prop="permiModel"
+          label="权限模式"
+          :formatter="formatterPermiModel"
           align="center"
         ></el-table-column>
         <el-table-column
@@ -66,6 +69,12 @@
         ></el-table-column>
         <el-table-column label="操作" width="180" align="center">
           <template #default="scope">
+            <el-button
+              type="text"
+              icon="el-icon-edit"
+              @click.stop="handleEdit(scope.$index, scope.row)"
+              >模版式新增</el-button
+            >
             <el-button
               type="text"
               icon="el-icon-edit"

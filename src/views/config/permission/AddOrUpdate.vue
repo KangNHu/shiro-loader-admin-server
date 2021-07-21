@@ -150,14 +150,6 @@ export default {
     //是否查看操作
     islook(){
       return this.$route.params.action == 3;
-    },
-    titleDescribe(){
-       switch(this.action){
-          case "1" : return "新增";
-          case "2" : return "更新";
-          case "3" : return "查看";
-       }
-       return "";
     }
   },
   methods: {

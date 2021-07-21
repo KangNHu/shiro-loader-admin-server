@@ -67,14 +67,14 @@ const routes = [
                 /* webpackChunkName: "charts" */
                 "../views/config/global/AddOrUpdate.vue")
             }, {
-                path: "/form",
-                name: "baseform",
+                path: "/permissionMetadata",
+                name: "permissionMetadata",
                 meta: {
-                    title: '表单'
+                    title: '权限元数据管理'
                 },
                 component: () => import (
                 /* webpackChunkName: "form" */
-                "../views/BaseForm.vue")
+                "../views/config/permission/Page.vue")
             }, {
                 path: "/tabs",
                 name: "tabs",
