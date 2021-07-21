@@ -17,13 +17,8 @@
           >新增</el-button
         >
         <el-input
-          v-model="query.username"
-          placeholder="用户名"
-          class="handle-input mr10"
-        ></el-input>
-        <el-input
-          v-model="query.nickname"
-          placeholder="用户昵称"
+          v-model="query.tenantId"
+          placeholder="租户ID"
           class="handle-input mr10"
         ></el-input>
         <el-button type="primary" icon="el-icon-search" @click="handleSearch"
@@ -44,11 +39,23 @@
           width="55"
           align="center"
         ></el-table-column>
-        <el-table-column prop="username" label="用户名"></el-table-column>
-        <el-table-column prop="nickname" label="用户昵称"></el-table-column>
+        <el-table-column prop="tenantId" label="租户ID"></el-table-column>
+         <el-table-column label="接口白名单" show-overflow-tooltip = "true">
+            <template #default="scope">
+                <div v-if="scope.row.anons">
+                  <el-tag v-for="anon in (scope.row.anons ? scope.row.anons.split(',') : [])" :key="anon" >{{anon}}</el-tag>
+                </div>
+            </template>
+        </el-table-column>
         <el-table-column
-          prop="status"
-          label="状态"
+          prop="enableAuthentication"
+          label="是否开启鉴权"
+          :formatter="formatterStatus"
+          align="center"
+        ></el-table-column>
+        <el-table-column
+          prop="enableAuthorization"
+          label="是否开启授权"
           :formatter="formatterStatus"
           align="center"
         ></el-table-column>
@@ -59,12 +66,6 @@
         ></el-table-column>
         <el-table-column label="操作" width="180" align="center">
           <template #default="scope">
-            <el-button
-              type="text"
-              icon="el-icon-edit"
-              @click.stop="handleRestPassword(scope.$index, scope.row)"
-              >重置密码</el-button
-            >
             <el-button
               type="text"
               icon="el-icon-edit"
@@ -85,47 +86,35 @@
         <el-pagination
           background
           layout="total, prev, pager, next"
-          :current-page="query.pageNo"
+          :current-page="query.pageIndex"
           :page-size="query.pageSize"
           :total="pageTotal"
           @current-change="handlePageChange"
         ></el-pagination>
       </div>
     </div>
-
-    <add-or-update
-      :open="addOrUpdate.modalOpen"
-      :action-sate="addOrUpdate.actionSate"
-      :title-describe="addOrUpdate.titleDescribe"
-      :user-id="addOrUpdate.userId"
-      @operation-complete="handleSearch"
-      @cancel="cancel"
-    />
   </div>
 </template>
 
 <script>
-import userApi from "../../api/UserApi";
-import addOrUpdate from "./AddOrUpdate.vue";
+import ca from "../../../api/ConfigApi";
 export default {
   name: "user",
   data() {
     return {
       query: {
-        username: "", //登录名称
-        nickname: "", //用户昵称
+        tenantId: "", //租户id
         pageNo: 1,
         pageSize: 10,
       },
-      //用户 查看 新增 编辑 组件属性
-      addOrUpdate: {
-        modalOpen: false,
-        actionSate: 1,
-        titleDescribe: "新增",
-        userId: "",
-      },
       tableData: [],
+      multipleSelection: [],
+      delList: [],
+      editVisible: false,
       pageTotal: 0,
+      form: {},
+      idx: -1,
+      id: -1,
     };
   },
   created() {
@@ -133,7 +122,7 @@ export default {
   },
   methods: {
     getData() {
-      userApi.getPageList(this.query).then((page) => {
+      ca.globalPage(this.query).then((page) => {
         if (page) {
           console.log(page);
           this.tableData = page.list;
@@ -143,16 +132,19 @@ export default {
     },
     //新增操作
     handlingAdd() {
-      this.addOrUpdate.actionSate = 1;
-      this.addOrUpdate.titleDescribe = "新增";
-      this.addOrUpdate.modalOpen = true;
+      this.$router.push({
+        name:"globalMetadata-addOrUpdate",
+        path:" /globalMetadata/addOrUpdate",
+        params:{action:1}
+      });
     },
     // 编辑操作
     handleEdit(index, row) {
-      this.addOrUpdate.actionSate = 3;
-      this.addOrUpdate.userId = row.id;
-      this.addOrUpdate.titleDescribe = "编辑";
-      this.addOrUpdate.modalOpen = true;
+      this.$router.push({
+        name:"globalMetadata-addOrUpdate",
+        path:" /globalMetadata/addOrUpdate",
+        params:{action:2,id:row.id}
+      });
     },
     // 删除操作
     handleDelete(index, row) {
@@ -161,23 +153,8 @@ export default {
         type: "warning",
       })
         .then(() => {
-          userApi.delete(row.id).then(() => {
+          ca.deleteGlobal(row.id).then(() => {
             this.$message.success("删除成功");
-            //刷新列表
-            this.handleSearch();
-          });
-        })
-        .catch(() => {});
-    },
-    //重置密码
-    handleRestPassword(index, row) {
-      // 二次确认删除
-      this.$confirm("确定要重置吗？", "提示", {
-        type: "warning",
-      })
-        .then(() => {
-          userApi.restPassword(row.id).then(() => {
-            this.$message.success("重置成功");
             //刷新列表
             this.handleSearch();
           });
@@ -186,15 +163,11 @@ export default {
     },
     //查看
     look(row) {
-      this.addOrUpdate.actionSate = 2;
-      this.addOrUpdate.userId = row.id;
-      this.addOrUpdate.titleDescribe = "查看";
-      this.addOrUpdate.modalOpen = true;
-    },
-    //取消模态框
-    cancel() {
-      this.addOrUpdate.modalOpen = false;
-      this.addOrUpdate.userId = "";
+      this.$router.push({
+        name:"globalMetadata-addOrUpdate",
+        path:" /globalMetadata/addOrUpdate",
+        params:{action:3,id:row.id}
+      });
     },
     // 触发搜索按钮
     handleSearch() {
@@ -216,13 +189,10 @@ export default {
       return this.dayutil(cellValue).format("YYYY-MM-DD HH:mm:ss");
     },
     formatterStatus(row, column, cellValue) {
-      return cellValue ? (cellValue === 1 ? "正常" : "禁用") : cellValue;
+      return cellValue === 1 ? "开启" : "关闭";
     },
   },
   inject: ["dayutil"],
-  components: {
-    addOrUpdate,
-  },
 };
 </script>
 

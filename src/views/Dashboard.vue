@@ -2,94 +2,87 @@
   <div>
     <el-row :gutter="20">
       <el-col :span="8">
-          <el-card shadow="hover" class="mgb20 box-card">
-            <div class="user-info">
-              <img src="../assets/img/img.jpg" class="user-avator" alt />
-              <div class="user-info-cont">
-                <div>{{ nickname }}</div>
-              </div>
+        <el-card shadow="hover" class="mgb20 box-card">
+          <div class="user-info">
+            <img src="../assets/img/img.jpg" class="user-avator" alt />
+            <div class="user-info-cont">
+              <div>{{ nickname }}</div>
             </div>
-          </el-card>
-          <el-card shadow="hover" class="box-card">
-            <template #header>
-              <div class="card-heade">
-                <span>登录日志</span>
-              </div>
-            </template>
-            <login-log style="height:190px"></login-log>
-          </el-card>
+          </div>
+        </el-card>
+        <el-card shadow="hover" class="box-card">
+          <template #header>
+            <div class="card-heade">
+              <span>登录日志</span>
+            </div>
+          </template>
+          <login-log style="height: 205px"></login-log>
+        </el-card>
       </el-col>
       <el-col :span="16">
-        <el-row :gutter="20" class="mgb20">
-          <el-col :span="8">
-            <el-card shadow="hover" :body-style="{ padding: '0px' }">
-              <div class="grid-content grid-con-1">
-                <i class="el-icon-user-solid grid-con-icon"></i>
-                <div class="grid-cont-right">
-                  <div class="grid-num">1234</div>
-                  <div>用户访问量</div>
-                </div>
-              </div>
-            </el-card>
-          </el-col>
-          <el-col :span="8">
-            <el-card shadow="hover" :body-style="{ padding: '0px' }">
-              <div class="grid-content grid-con-2">
-                <i class="el-icon-message-solid grid-con-icon"></i>
-                <div class="grid-cont-right">
-                  <div class="grid-num">321</div>
-                  <div>系统消息</div>
-                </div>
-              </div>
-            </el-card>
-          </el-col>
-          <el-col :span="8">
-            <el-card shadow="hover" :body-style="{ padding: '0px' }">
-              <div class="grid-content grid-con-3">
-                <i class="el-icon-s-goods grid-con-icon"></i>
-                <div class="grid-cont-right">
-                  <div class="grid-num">5000</div>
-                  <div>数量</div>
-                </div>
-              </div>
-            </el-card>
-          </el-col>
-        </el-row>
-        <el-card shadow="hover" style="height: 403px">
+        <el-card shadow="hover" class="xxx" style="height: 507px">
           <template #header>
-            <div class="clearfix">
-              <span>待办事项</span>
-              <el-button style="float: right; padding: 3px 0" type="text"
-                >添加</el-button
+            <div class="card-heade">
+              <span>系统操作日志</span>
+              <el-select
+                class="left_interval"
+                v-model="logsQuery.operateId"
+                filterable
+                remote
+                reserve-keyword
+                placeholder="操作人"
+                :remote-method="userSelectData"
+                :loading="userSelectLoading"
+              >
+                <el-option
+                  class="left_interval"
+                  v-for="item in userSelectOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+              <el-select
+                v-model="logsQuery.businessCode"
+                placeholder="请选择"
+                class="left_interval"
+              >
+                <el-option
+                  v-for="item in businessCodeSelectOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                >
+                </el-option>
+              </el-select>
+              <el-button
+                class="left_interval"
+                type="primary"
+                icon="el-icon-search"
+                @click="handleLogsSearch"
+                >搜索</el-button
               >
             </div>
           </template>
-
-          <el-table :show-header="false" :data="todoList" style="width: 100%">
-            <el-table-column width="40">
-              <template #default="scope">
-                <el-checkbox v-model="scope.row.status"></el-checkbox>
-              </template>
-            </el-table-column>
-            <el-table-column>
-              <template #default="scope">
-                <div
-                  class="todo-item"
-                  :class="{
-                    'todo-item-del': scope.row.status,
-                  }"
-                >
-                  {{ scope.row.title }}
+          <el-table :show-header="false" :data="logs" style="width: 100%">
+            <el-table-column show-overflow-tooltip = "true">
+              <template #default="scope" >
+                <div class="todo-item">
+                  {{ scope.row.context }}
                 </div>
               </template>
             </el-table-column>
-            <el-table-column width="60">
-              <template>
-                <i class="el-icon-edit"></i>
-                <i class="el-icon-delete"></i>
-              </template>
-            </el-table-column>
+            <el-table-column width="120" prop="operateName"></el-table-column>
+            <el-table-column width="200" prop="createTime" :formatter = "formatterDate"></el-table-column>
           </el-table>
+          <el-pagination
+            :page-size="logsQuery.pageSize"
+            :current-page="logsQuery.pageNo"
+            layout="prev, pager, next"
+            :total="total"
+            @current-change="handleLogsPageChange"
+          >
+          </el-pagination>
         </el-card>
       </el-col>
     </el-row>
@@ -121,38 +114,26 @@
 <script>
 import Schart from "vue-schart";
 import ut from "../utils/userUtils";
+import ua from "../api/UserApi";
 import LoginLog from "../views/user/LoginLog.vue";
+import bc from "../api/BusinessCode";
+import sa from "../api/SystemApi";
 export default {
   name: "dashboard",
   data() {
     return {
+      logsQuery: {
+        pageNo: 1,
+        pageSize: 8,
+        businessCode: undefined,
+        operateId: undefined,
+      },
+      total: 1,
+      userSelectLoading: false,
+      userSelectOptions: [],
+      businessCodeSelectOptions: bc.dict,
       name: localStorage.getItem("ms_username"),
-      todoList: [
-        {
-          title: "今天要修复100个bug",
-          status: false,
-        },
-        {
-          title: "今天要修复100个bug",
-          status: false,
-        },
-        {
-          title: "今天要写100行代码加几个bug吧",
-          status: false,
-        },
-        {
-          title: "今天要修复100个bug",
-          status: false,
-        },
-        {
-          title: "今天要修复100个bug",
-          status: true,
-        },
-        {
-          title: "今天要写100行代码加几个bug吧",
-          status: true,
-        },
-      ],
+      logs: [],
       data: [
         {
           name: "2018/09/04",
@@ -232,13 +213,16 @@ export default {
     Schart,
     LoginLog,
   },
+  created() {
+    this.handleLogsSearch();
+  },
   computed: {
     nickname() {
       let userInfo = ut.getCurrentUser();
       return userInfo ? userInfo.nickname : "未知";
     },
   },
-
+  inject: ["dayutil"],
   methods: {
     changeDate() {
       const now = new Date().getTime();
@@ -249,31 +233,58 @@ export default {
         }/${date.getDate()}`;
       });
     },
+    //用户下拉数据获取方法
+    userSelectData(query) {
+      this.userSelectLoading = true;
+      ua.getUserSelectData(query).then((list) => {
+        this.userSelectLoading = false;
+        if (list) {
+          this.userSelectOptions = list.map((item) => {
+            return { value: item.id, label: item.username };
+          });
+        }
+      });
+    },
+    //搜索日志列表
+    handleLogsSearch() {
+      this.logsQuery.pageNo = 1;
+      this.getLogsData()
+    },
+    //获取分页数据
+    getLogsData() {
+      sa.logsPage(this.logsQuery).then((page) => {
+        if (page) {
+          this.total = page.total;
+          this.logs = page.list;
+        }
+      });
+    },
+    // 分页导航
+    handleLogsPageChange(val) {
+      this.logsQuery.pageNo = val;
+      this.getLogsData();
+    },
+    //时间格式化
+    dateFormat(date){
+          if(!date){
+               return; 
+          }  
+          return this.dayutil(date).format("YYYY-MM-DD HH:mm:ss");
+    },
+    //列的时间格式化
+    formatterDate(row, column, cellValue){
+        return this.dateFormat(cellValue);
+    }
   },
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .el-row {
   margin-bottom: 20px;
 }
-
-.grid-content {
-  display: flex;
-  align-items: center;
-  height: 100px;
-}
-
-.grid-cont-right {
-  flex: 1;
-  text-align: center;
-  font-size: 14px;
-  color: #999;
-}
-
-.grid-num {
-  font-size: 30px;
-  font-weight: bold;
+.left_interval {
+  margin-left: 10px;
 }
 
 .grid-con-icon {
@@ -285,41 +296,17 @@ export default {
   color: #fff;
 }
 
-.grid-con-1 .grid-con-icon {
-  background: rgb(45, 140, 240);
-}
-
-.grid-con-1 .grid-num {
-  color: rgb(45, 140, 240);
-}
-
-.grid-con-2 .grid-con-icon {
-  background: rgb(100, 213, 114);
-}
-
-.grid-con-2 .grid-num {
-  color: rgb(45, 140, 240);
-}
-
-.grid-con-3 .grid-con-icon {
-  background: rgb(242, 94, 67);
-}
-
-.grid-con-3 .grid-num {
-  color: rgb(242, 94, 67);
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  padding-bottom: 20px;
-  margin-bottom: 20px;
-}
-
 .user-avator {
   width: 120px;
   height: 120px;
   border-radius: 50%;
+}
+.user-info {
+  display: flex;
+  align-items: center;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #ccc;
+  margin-bottom: 20px;
 }
 
 .user-info-cont {
@@ -334,16 +321,6 @@ export default {
   color: #222;
 }
 
-.user-info-list {
-  font-size: 14px;
-  color: #999;
-  line-height: 25px;
-}
-
-.user-info-list span {
-  margin-left: 70px;
-}
-
 .mgb20 {
   margin-bottom: 20px;
 }
@@ -352,11 +329,11 @@ export default {
   font-size: 14px;
 }
 
-.todo-item-del {
-  text-decoration: line-through;
-  color: #999;
+.logs_header .el-card .el-card__header {
+  height: 50px;
+  margin: 0;
+  padding: 0;
 }
-
 .schart {
   width: 100%;
   height: 300px;

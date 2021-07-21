@@ -26,6 +26,8 @@
 import ua from "../../api/UserApi";
 import day from "dayjs";
 import isToday from "dayjs/plugin/isToday";
+import customParseFormat from "dayjs/plugin/customParseFormat"
+day.extend(customParseFormat);
 day.extend(isToday);
 export default {
   data() {
@@ -64,7 +66,7 @@ export default {
       if (date.isToday()) {
         return "今天" + "      " + date.format("HH:mm:ss");
       }
-      return date.format("yyyy-MM-dd HH:mm:ss");
+      return date.format("YYYY-MM-DD HH:mm:ss");
     },
   },
 };

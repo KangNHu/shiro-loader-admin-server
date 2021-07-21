@@ -40,7 +40,7 @@
   </el-dialog>
 </template>
 
-<script>
+<script >
 import userApi from "../../api/UserApi";
 export default {
   data() {
@@ -81,15 +81,17 @@ export default {
           if (this.actionSate === 1) {
             userApi.add(this.form).then(() => {
               this.$message.success("新增成功");
+              this.sendOperationComplete();
             });
           }
           //编辑
           if (this.actionSate === 3) {
             userApi.update(this.form).then(() => {
               this.$message.success("编辑成功");
+              this.sendOperationComplete();
             });
           }
-          this.sendOperationComplete();
+         
         }
       });
     },

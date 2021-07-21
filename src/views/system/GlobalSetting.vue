@@ -38,6 +38,13 @@
             >
             </el-input>
           </el-form-item>
+          <el-form-item label="系统初始密码" prop="initPassword">
+            <el-input
+              placeholder="请输入系统初始密码"
+              v-model="form.initPassword"
+            >
+            </el-input>
+          </el-form-item>
           <el-form-item label="登录有效时间" prop="loginValidTime">
             <el-input-number
               controls-position="right"
@@ -67,6 +74,7 @@ export default {
         keyPair: "{xxxxxxxxx}",
         clientToken: "123456",
         loginValidTime: 2,
+        initPassword:''
       },
       rules: {
         eventTime: [
@@ -81,6 +89,9 @@ export default {
          loginValidTime: [
           { required: true, message: "登录有效时间不能为空", trigger: "blur" },
         ],
+        initPassword:[
+            {required: true, message: "系统初始密码不能为空", trigger: "blur" }
+        ]
       },
     };
   },

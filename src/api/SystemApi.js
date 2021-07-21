@@ -1,7 +1,5 @@
 import request from "../utils/request"
-import bc from "./BusinessCode"
 
-bc.serBusinesseCode(request , bc.system_businesse_code)
 
 export default{
     //获取系统信息
@@ -17,6 +15,14 @@ export default{
             url:"/admin/system",
             method:"post",
             data:systemInfo
+        })
+    },
+    //操作日志列表分页
+    logsPage(page){
+        return request({
+            url:"/admin/system/logsPage",
+            method:"post",
+            data:page
         })
     }
 }

@@ -1,7 +1,5 @@
 import request from '../utils/request';
-import bc from "./BusinessCode"
 import userutil from "../utils/userUtils"
-bc.serBusinesseCode(request , bc.user_login_businesse_code);
 //设置用户管理的业务码
 export default{
     //用户管理列表
@@ -36,6 +34,14 @@ export default{
             data:user
         })
     },
+    //重置密码
+    restPassword(userId){
+        return request({
+            url:"/admin/user/restPassword",
+            method:"put",
+            params:{userId:userId}
+        })
+    },
     //删除用户
     delete(userId){
         return request({
@@ -59,6 +65,14 @@ export default{
         return request({
             url:"/admin/user/userInfo",
             method:"get"
+        })
+    },
+    //用户下拉框
+    getUserSelectData(username){
+        return request({
+            url:"/admin/user/getUserSelectData",
+            method:"get",
+            params:{username:username}
         })
     },
     //登录

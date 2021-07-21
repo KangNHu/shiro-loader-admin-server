@@ -2,6 +2,7 @@ import axios from 'axios';
 import message  from 'element-plus/lib/el-message';
 import router from '../router';
 import ut from '../utils/userUtils';
+import bc from "../api/BusinessCode"
 const service = axios.create({
 
     // process.env.NODE_ENV === 'development' 来判断是否开发环境
@@ -17,11 +18,8 @@ service.interceptors.request.use(
     config => {
         //添加token
         config.headers[ut.token_head_name] = ut.getToken();
-        //添加定制化的请求头
-        let headers = service.headersCall();
-        for(let key in headers){
-            config.headers[key] = headers[key];
-        }
+        //设置业务码
+        bc.handBusinesseCode(config);
         return config;
     },
     error => {

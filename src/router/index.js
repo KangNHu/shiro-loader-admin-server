@@ -20,15 +20,6 @@ const routes = [
                 component: () => import (
                 /* webpackChunkName: "dashboard" */
                 "../views/Dashboard.vue")
-            }, {
-                path: "/globalSettings",
-                name: "globalSettings",
-                meta: {
-                    title: '系统全局配置'
-                },
-                component: () => import (
-                /* webpackChunkName: "table" */
-                "../views/system/GlobalSetting.vue")
             },{
                 path: "/user",
                 name: "user",
@@ -39,14 +30,42 @@ const routes = [
                 /* webpackChunkName: "table" */
                 "../views/user/Page.vue")
             },{
-                path: "/charts",
-                name: "basecharts",
+                path: "/permission",
+                name: "permission",
                 meta: {
-                    title: '图表'
+                    title: '权限管理'
+                },
+                component: () => import (
+                /* webpackChunkName: "table" */
+                "../views/permission/Page.vue")
+            },{
+                path: "/globalSettings",
+                name: "globalSettings",
+                meta: {
+                    title: '系统全局配置'
+                },
+                component: () => import (
+                /* webpackChunkName: "table" */
+                "../views/system/GlobalSetting.vue")
+            }
+            ,{
+                path: "/globalMetadata",
+                name: "globalMetadata",
+                meta: {
+                    title: '全局元数据管理'
                 },
                 component: () => import (
                 /* webpackChunkName: "charts" */
-                "../views/BaseCharts.vue")
+                "../views/config/global/Page.vue")
+            },{
+                path: "/globalMetadata/addOrUpdate",
+                name: "globalMetadata-addOrUpdate",
+                meta: {
+                    title: '全局元数据管理'
+                },
+                component: () => import (
+                /* webpackChunkName: "charts" */
+                "../views/config/global/AddOrUpdate.vue")
             }, {
                 path: "/form",
                 name: "baseform",
@@ -74,16 +93,6 @@ const routes = [
                 component: () => import (
                 /* webpackChunkName: "donate" */
                 "../views/Donate.vue")
-            }, {
-                path: "/permission",
-                name: "permission",
-                meta: {
-                    title: '权限管理',
-                    permission: true
-                },
-                component: () => import (
-                /* webpackChunkName: "permission" */
-                "../views/Permission.vue")
             }, {
                 path: "/i18n",
                 name: "i18n",
