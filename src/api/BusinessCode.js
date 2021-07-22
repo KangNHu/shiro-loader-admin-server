@@ -10,11 +10,13 @@ const system_businesse_code = 2;
 const permission_businesse_code  =3;
 //全局元信息配置管理
 const global_metadata_businesse_code = 4;
+//权限元信息管理
+const permission_metadata_businesse_code = 6;
 //登录
 const login_businesse_code =5;
 
 const dict = []
-
+dict[4]={value:permission_metadata_businesse_code,label:"权限元信息配置管理"}
 dict[3]={value:global_metadata_businesse_code,label:"全局元信息配置管理"}
 dict[2]={value:system_businesse_code,label:"系统配置管理"}
 dict[1]={value:permission_businesse_code,label:"权限管理"}
@@ -24,7 +26,8 @@ const mapping = {
     "/admin/config/global" : global_metadata_businesse_code,
     "/admin/user":user_businesse_code,
     "/admin/permission":permission_businesse_code,
-    "/admin/system":system_businesse_code
+    "/admin/system":system_businesse_code,
+    "/admin/config/permission":permission_metadata_businesse_code
 }
 /**
  * 

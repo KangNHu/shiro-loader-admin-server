@@ -66,11 +66,8 @@ export default {
             if (token) {
               console.log(token);
               ut.saveToken(token)
-              //获取当前用户信息
-              userApi.getCurrentUser().then(user =>{
-                  ut.setUserInfo(user)
-                  this.$router.push("/");
-              })
+              let callUrl = this.$route.param.call_url
+              this.$router.push(callUrl ? callUrl : "/");
             }else{
                 ut.removeUserState();
                 this.$message.error("获取token失败")

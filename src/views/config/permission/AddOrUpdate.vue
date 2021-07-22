@@ -10,96 +10,53 @@
     </div>
     <div class="container">
       <div class="form-box">
-        <el-form ref="form" :model="form" label-width="230px" :rules="rules" >
-          <el-form-item label="租户Id" prop="tenantId">
-            <el-input autosize placeholder="请输入租户Id" v-model="form.tenantId" :disabled="islook"/>
-          </el-form-item>
-          <el-form-item label="是否开启鉴权">
-            <el-switch
-              v-model="form.enableAuthentication"
-              active-value="0"
-              inactive-value="1"
-              active-text="关闭"
-              inactive-text="开启"
+        <el-form ref="form" :model="form" label-width="230px" :rules="rules">
+          <el-form-item label="接口URL" prop="path">
+            <el-input
+              autosize
+              placeholder="请输入接口URL"
+              v-model="form.path"
               :disabled="islook"
             />
           </el-form-item>
-          <el-form-item label="是否开启授权">
-            <el-switch
-              v-model="form.enableAuthorization"
-              active-value="0"
-              inactive-value="1"
-              active-text="关闭"
-              inactive-text="开启"
+          <el-form-item label="请求方式" prop="method">
+            <dict-select v-model="form.method" dict-code="method_code" />
+          </el-form-item>
+          <el-form-item label="权限标识列表" prop="permis">
+            <dynamic-input
+              v-model:values="form.permis"
+              :di-disabled="islook"
+              placeholder="请输入权限标识"
+              @change="values => form.permis = values"
+            />
+          </el-form-item>
+          <el-form-item label="逻辑符" prop="logical">
+            <dict-select
+              dict-code="logical_code"
+              v-model="form.logical"
               :disabled="islook"
             />
           </el-form-item>
-          <el-form-item label="接口白名单">
-            <el-scrollbar  height="10px"  wrap-style=" max-height: 220px" >
-               <el-space
-                v-for="(anon, index) in form.anons"
-                :key="index"
-                wrap
-              >
-              <el-input style="width:230px" v-model="form.anons[index]" placeholder="请输入白名单规则" :disabled="islook"/>
-              <el-button
-                  @click="addLine('anons')"
-                  type="primary"
-                  icon="el-icon-edit"
-                  circle
-                  v-if="!islook"
-                ></el-button>
-                <el-button
-                  v-if="index > 0 &!islook"
-                  @click="delLine(index,'anons')"
-                  type="danger"
-                  icon="el-icon-delete"
-                  circle
-                ></el-button>
-               </el-space>
-            </el-scrollbar> 
+          <el-form-item label="授权模式" prop="permiModel">
+            <dict-select
+              dict-code="permission_model_code"
+              v-model="form.permiModel"
+              :disabled="islook"
+            />
           </el-form-item>
-          <el-form-item label="扩展字段" >
-            <el-scrollbar height="10px" wrap-style=" max-height: 220px" >
-              <el-space
-                v-for="(extendFilde, index) in form.extend"
-                :key="index"
-                wrap
-              >
-                <el-input
-                  style="width: 100px"
-                  autosize
-                  v-model="form.extend[index].key"
-                  placeholder="key"
-                  :disabled="islook"
-                />
-                <span>：</span>
-                <el-input
-                  style="width: 100px"
-                  autosize
-                  v-model="form.extend[index].value"
-                  placeholder="vlaue"
-                  :disabled="islook"
-                />
-                <el-button
-                  @click="addLine('extend')"
-                  type="primary"
-                  icon="el-icon-edit"
-                  v-if="!islook"
-                  circle
-                ></el-button>
-                <el-button
-                  v-if="index > 0 & !islook"
-                  @click="delLine(index,'extend')"
-                  type="danger"
-                  icon="el-icon-delete"
-                  circle
-                ></el-button>
-              </el-space>
-            </el-scrollbar>
+          <el-form-item label="扩展字段">
+              <dynamic-map-input
+              v-model:values="form.extend"
+              key-placeholder="key"
+              value-placeholder="value"
+              :dm-disabled="islook"
+              @change="values => form.extend = values"
+            />
           </el-form-item>
           <el-form-item>
-            <el-button  v-if="!islook" type="primary" @click="onSubmit">表单提交</el-button>
+            <el-button v-if="!islook" type="primary" @click="onSubmit"
+              >表单提交</el-button
+            >
             <el-button @click="cancel">取消</el-button>
           </el-form-item>
         </el-form>
@@ -110,34 +67,50 @@
 
 <script>
 import ca from "../../../api/ConfigApi";
-import ou from "../../../utils/ObjectUtils"
+import ou from "../../../utils/ObjectUtils";
+import DictSelect from "../../../components/DictSelect.vue";
+import DynamicInput from "../../../components/DynamicInput.vue";
+import DynamicMapInput from "../../../components/DynamicMapInput.vue"
 export default {
   data() {
     return {
       form: {
-        id: '',
-        tenantId: "",
-        enableAuthentication: 1,
-        enableAuthorization: 1,
-        anons: [""],
-        extend: [
-          {
-            key: "",
-            value: "",
-          },
-        ],
+        id: "",
+        path: "",
+        method: 1,
+        permis: [],
+        logical: 1,
+        permiModel: 1,
+        extend: [],
       },
       rules: {
-        tenantId: [
-          { required: true, message: "租户ID不能为空", trigger: "blur" },
+        path: [{ required: true, message: "接口URL不能为空", trigger: "blur" }],
+        method: [
+          { required: true, message: "请求方式不能为空", trigger: "blur" },
+        ],
+        permis: [
+          { required: true, message: "权限标识不能为空", trigger: "blur" },
+        ],
+        logical: [
+          { required: true, message: "逻辑符不能为空", trigger: "blur" },
+        ],
+        permiModel: [
+          { required: true, message: "授权模式不能为空", trigger: "blur" },
         ],
       },
     };
   },
   created() {
-    // 1 为新增 2为更新 3 查看
+    // 1 为新增 2为更新 3 查看 ,4 模版式新增
     if (this.action != 1) {
       this.getData();
+    } 
+    
+    if(this.action == 4){
+      //设置模版
+      this.form.path = this.$route.params.path
+      this.form.logical = +this.$route.params.logical;
+      this.form.permiModel = +this.$route.params.permiModel;
     }
   },
   computed: {
@@ -148,107 +121,81 @@ export default {
       return this.$route.params.id;
     },
     //是否查看操作
-    islook(){
+    islook() {
       return this.$route.params.action == 3;
-    }
+    },
+  },
+  components: {
+    DictSelect,
+    DynamicInput,
+    DynamicMapInput
   },
   methods: {
     //详情 获取系统配置信息
     getData() {
-      ca.getGlobal(this.id).then((global) => {
-        if (global) {
-          if (global.anons) {
-            global.anons = global.anons.split(",");
-          }else if(!this.islook){
-            global.anons=[""]
+      ca.getPermission(this.id).then((permi) => {
+        if (permi) {
+          if (permi.permis) {
+            permi.permis = permi.permis.split(",");
           }
-          if (global.extend) {
+          if (permi.extend) {
             let extend = [];
             let i = 0;
-            for (let key in global.extend) {
+            for (let key in permi.extend) {
               extend[i] = {
                 key: key,
-                value: global.extend[key],
+                value: permi.extend[key],
               };
               i++;
             }
-            global.extend = extend;
+            permi.extend = extend;
           }
-          //如果没有则初始化一个
-          if((!global.extend || global.extend.length == 0)&&!this.islook){
-                global.extend = [{
-                  key:"",
-                  value:""
-                }];
-          }
-          this.form = global;
+          this.form = permi;
         }
       });
     },
-    //添加一行
-    delLine(index,filed){
-        if(filed === "anons"){
-          this.form.anons.splice(index,1)
-        }else{
-          this.form.extend.splice(index,1);
-        }
-    },
-    //删除一行
-    addLine(filed){
-      if(filed === "anons"){
-          this.form.anons.push("")
-        }else{
-          this.form.extend.push({key:"",value:""});
-        }
-    },
     //关闭当前窗口
-    cancel(){
-        this.$store.commit("closeCurrentTag",this);
-        this.$store.push("/globalMetadata");
+    cancel() {
+      this.$store.commit("closeCurrentTag", this);
+      this.$store.push("/permissionMetadata");
     },
     //提交
     onSubmit() {
       console.log(this.form.extend);
       this.$refs.form.validate((vali) => {
         if (vali) {
-          let global =ou.copyObject(this.form , (key , value) =>{
-                  if(key === 'anons'){
-                     return value.join(",");
-                  }
-                  if(key === 'extend'){
-                    let extend = {};
-                    value.forEach(item => {extend[item.key] = item.value})
-                    return extend;
-                  }
-                  return value;
-              }
-          )
-          //新增
-          if(this.action == 1){
-              ca.addGlobal(global).then(() => {
-                this.$message.success("新增成功");
-                this.$router.push("/globalMetadata")
+          let permi = ou.copyObject(this.form, (key, value) => {
+            if (key === "permis") {
+              return value.join(",");
+            }
+            if (key === "extend") {
+              let extend = {};
+              value.forEach((item) => {
+                extend[item.key] = item.value;
               });
+              return extend;
+            }
+            return value;
+          });
+          //新增
+          if (this.action == 1 || this.action == 4) {
+            ca.addPermission(permi).then(() => {
+              this.$message.success("新增成功");
+              this.$router.push("/permissionMetadata");
+            });
           }
           //编辑
-          else if(this.action == 2){
-              ca.updateGlobal(global).then(() => {
-                this.$message.success("编辑成功");
-                this.$router.push("/globalMetadata")
-              });
+          else if (this.action == 2) {
+            ca.updatePermission(permi).then(() => {
+              this.$message.success("编辑成功");
+              this.$router.push("/permissionMetadata");
+            });
           }
         }
       });
-    },
-    //处理计数器事件
-    // name 字段名称
-    // value 变更后的值
-    handleChange(name, value) {
-      console.log(name, value);
     },
   },
 };
 </script>
 <style scoped>
-
 </style>

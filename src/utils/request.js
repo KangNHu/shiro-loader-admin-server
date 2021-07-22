@@ -67,6 +67,8 @@ service.interceptors.response.use(
                     type: "warning"
                 });
              }
+             //清空用户状态
+             ut.removeUserState();
              //跳转到登录页
              router.push("/login");
             

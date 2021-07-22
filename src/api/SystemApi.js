@@ -24,5 +24,12 @@ export default{
             method:"post",
             data:page
         })
+    },
+    //获取所以字典
+    getDicts(){
+        return request({
+            url:"/admin/common/dict/all",
+            method:"get"
+        })
     }
 }

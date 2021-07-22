@@ -126,7 +126,7 @@ export default {
         if (page) {
           console.log(page);
           this.tableData = page.list;
-          this.pageTotal = page.total || 50;
+          this.pageTotal = page.total || 0;
         }
       });
     },

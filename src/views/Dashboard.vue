@@ -42,19 +42,7 @@
                   :value="item.value"
                 />
               </el-select>
-              <el-select
-                v-model="logsQuery.businessCode"
-                placeholder="请选择"
-                class="left_interval"
-              >
-                <el-option
-                  v-for="item in businessCodeSelectOptions"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                >
-                </el-option>
-              </el-select>
+              <dict-select dict-code="business_code" v-model="logsQuery.businessCode"/>
               <el-button
                 class="left_interval"
                 type="primary"
@@ -112,6 +100,7 @@
 </template>
 
 <script>
+import DictSelect from "../components/DictSelect.vue"
 import Schart from "vue-schart";
 import ut from "../utils/userUtils";
 import ua from "../api/UserApi";
@@ -212,6 +201,7 @@ export default {
   components: {
     Schart,
     LoginLog,
+    DictSelect
   },
   created() {
     this.handleLogsSearch();

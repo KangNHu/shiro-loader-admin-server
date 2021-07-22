@@ -17,10 +17,27 @@
           >新增</el-button
         >
         <el-input
-          v-model="query.tenantId"
+          v-model="query.path"
           placeholder="接口URl"
           class="handle-input mr10"
         ></el-input>
+        <el-input
+          v-model="query.permiCode"
+          placeholder="权限编码"
+          class="handle-input mr10"
+        ></el-input>
+        <dict-select
+          hint="请求方式"
+          v-model="query.method"
+          dict-code="method_code"
+          class="mr10"
+        />
+        <dict-select
+          hint="权限模式"
+          v-model="query.permiModel"
+          dict-code="permission_model_code"
+          class="mr10"
+        />
         <el-button type="primary" icon="el-icon-search" @click="handleSearch"
           >搜索</el-button
         >
@@ -39,29 +56,39 @@
           width="55"
           align="center"
         ></el-table-column>
-        <el-table-column prop="tenantId" label="接口URl"></el-table-column>
+        <el-table-column prop="path" label="接口URl"></el-table-column>
         <el-table-column label="请求方法">
           <template #default="scope">
-                  <el-tag>{{scope.row.method}}</el-tag>
+            <el-tag>{{
+              du.getDictValue("method_code", scope.row.method)
+            }}</el-tag>
           </template>
         </el-table-column>
-         <el-table-column label="权限标识列表" show-overflow-tooltip = "true">
-            <template #default="scope">
-                  <el-tag v-for="permi in (scope.row.permis ? scope.row.permis.split(',') : [])" :key="permi" >{{permi}}</el-tag>
-            </template>
+        <el-table-column label="权限标识列表" show-overflow-tooltip="true">
+          <template #default="scope">
+            <el-tag
+              v-for="permi in scope.row.permis
+                ? scope.row.permis.split(',')
+                : []"
+              :key="permi"
+              >{{ permi }}</el-tag
+            >
+          </template>
         </el-table-column>
-        <el-table-column
-          prop="logical"
-          label="逻辑类型"
-          :formatter="formatterLogical"
-          align="center"
-        ></el-table-column>
-        <el-table-column
-          prop="permiModel"
-          label="权限模式"
-          :formatter="formatterPermiModel"
-          align="center"
-        ></el-table-column>
+        <el-table-column label="逻辑类型" align="center">
+          <template #default="scope">
+            <el-tag>{{
+              du.getDictValue("logical_code", scope.row.logical)
+            }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="权限模式" align="center">
+          <template #default="scope">
+            <el-tag>{{
+              du.getDictValue("permission_model_code", scope.row.permiModel)
+            }}</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column
           prop="createTm"
           :formatter="formatterDate"
@@ -72,7 +99,7 @@
             <el-button
               type="text"
               icon="el-icon-edit"
-              @click.stop="handleEdit(scope.$index, scope.row)"
+              @click.stop="handlingTemplateAdd(scope.$index, scope.row)"
               >模版式新增</el-button
             >
             <el-button
@@ -107,15 +134,21 @@
 
 <script>
 import ca from "../../../api/ConfigApi";
+import du from "../../../utils/DictUtils";
+import DictSelect from "../../../components/DictSelect.vue";
 export default {
   name: "user",
   data() {
     return {
       query: {
-        tenantId: "", //租户id
+        path: "", //接口URL
+        method: "", //请求方式
+        permiModel: "", //权限模式
+        permiCode: "", //权限编码
         pageNo: 1,
         pageSize: 10,
       },
+      du: du,
       tableData: [],
       multipleSelection: [],
       delList: [],
@@ -129,30 +162,45 @@ export default {
   created() {
     this.handleSearch();
   },
+  components: {
+    DictSelect,
+  },
   methods: {
     getData() {
-      ca.globalPage(this.query).then((page) => {
+      ca.permissionPage(this.query).then((page) => {
         if (page) {
-          console.log(page);
           this.tableData = page.list;
-          this.pageTotal = page.total || 50;
+          this.pageTotal = page.total || 0;
         }
+      });
+    },
+    //模版式新增
+    handlingTemplateAdd(index, row) {
+      this.$router.push({
+        name: "permissionMetadata-addOrUpdate",
+        path: " /permissionMetadata/addOrUpdate",
+        params: {
+          action: 4,
+          path: row.path,
+          logical: row.logical,
+          permiModel: row.permiModel,
+        },
       });
     },
     //新增操作
     handlingAdd() {
       this.$router.push({
-        name:"globalMetadata-addOrUpdate",
-        path:" /globalMetadata/addOrUpdate",
-        params:{action:1}
+        name: "permissionMetadata-addOrUpdate",
+        path: " /permissionMetadata/addOrUpdate",
+        params: { action: 1 },
       });
     },
     // 编辑操作
     handleEdit(index, row) {
       this.$router.push({
-        name:"globalMetadata-addOrUpdate",
-        path:" /globalMetadata/addOrUpdate",
-        params:{action:2,id:row.id}
+        name: "permissionMetadata-addOrUpdate",
+        path: " /permissionMetadata/addOrUpdate",
+        params: { action: 2, id: row.id },
       });
     },
     // 删除操作
@@ -162,7 +210,7 @@ export default {
         type: "warning",
       })
         .then(() => {
-          ca.deleteGlobal(row.id).then(() => {
+          ca.deletePermission(row.id).then(() => {
             this.$message.success("删除成功");
             //刷新列表
             this.handleSearch();
@@ -173,9 +221,9 @@ export default {
     //查看
     look(row) {
       this.$router.push({
-        name:"globalMetadata-addOrUpdate",
-        path:" /globalMetadata/addOrUpdate",
-        params:{action:3,id:row.id}
+        name: "permissionMetadata-addOrUpdate",
+        path: " /permissionMetadata/addOrUpdate",
+        params: { action: 3, id: row.id },
       });
     },
     // 触发搜索按钮
@@ -196,9 +244,6 @@ export default {
         return cellValue;
       }
       return this.dayutil(cellValue).format("YYYY-MM-DD HH:mm:ss");
-    },
-    formatterStatus(row, column, cellValue) {
-      return cellValue === 1 ? "开启" : "关闭";
     },
   },
   inject: ["dayutil"],

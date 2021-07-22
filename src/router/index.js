@@ -61,7 +61,7 @@ const routes = [
                 path: "/globalMetadata/addOrUpdate",
                 name: "globalMetadata-addOrUpdate",
                 meta: {
-                    title: '全局元数据管理'
+                    title: '全局元数据管理-新增或编辑'
                 },
                 component: () => import (
                 /* webpackChunkName: "charts" */
@@ -76,6 +76,15 @@ const routes = [
                 /* webpackChunkName: "form" */
                 "../views/config/permission/Page.vue")
             }, {
+                path: "/permissionMetadata/addOrUpdate",
+                name: "permissionMetadata-addOrUpdate",
+                meta: {
+                    title: '权限元数据管理-新增或编辑'
+                },
+                component: () => import (
+                /* webpackChunkName: "form" */
+                "../views/config/permission/AddOrUpdate.vue")
+            },{
                 path: "/tabs",
                 name: "tabs",
                 meta: {
@@ -158,13 +167,24 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
     document.title = `${to.meta.title} | shiro plus`;
     const token = ut.getToken();
-    console.log("路由前" + token);
-    if (!token && to.path !== '/login') {
-        ut.removeUserState();
-        next('/login');
-    }else {
-        next();
+    //如果是登录状态 且方法登录页，则跳转到home
+    if(token && to.path == '/login'){
+        next("/")
+        return;
     }
+    //如果访问登录页且用户并没有登录
+    if(to.path == '/login' && !token){
+        next();
+        return;
+    }
+    //如果登录失效
+    if(!token){
+        //设置回调url
+        to.call_url = from.path;
+        next('/login');
+        return;
+    }
+    next();
 });
 
 export default router;

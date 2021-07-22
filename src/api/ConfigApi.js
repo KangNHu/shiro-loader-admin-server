@@ -39,6 +39,38 @@ export default{
             url:"/admin/config/global",
             method:"put",
             data:global
+        });
+    },
+    //新增权限元数据
+    addPermission(permission){
+        return request({
+            url:"/admin/config/permission",
+            method:"post",
+            data:permission
+        });
+    },
+    //更新权限元数据
+    updatePermission(permission){
+        return request({
+            url:"/admin/config/permission",
+            method:"put",
+            data:permission
+        });
+    },
+    //获取权限元数据
+    getPermission(id){
+        return request({
+            url:"/admin/config/permission",
+            method:"get",
+            params:{id:id}
+        })
+    },
+    //权限元信息分页
+    permissionPage(page){
+        return request({
+            url:"/admin/config/permission/page",
+            method:"post",
+            data:page
         })
     }
 }
